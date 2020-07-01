@@ -24,9 +24,9 @@
 
 /* ########################################## */
 /* COMMUNICATION OPTION */
-#define TXTFILE
+//#define TXTFILE
 //#define TCPIP
-//#define UDP
+#define UDP
 
 /* ########################################## */
 /* TCP */
@@ -34,7 +34,7 @@
 
 /* ########################################## */
 /* UDP */
-#define SERVER_LOCAL_IP "169.254.25.100"
+#define SERVER_LOCAL_IP "169.254.187.68"
 //#define SERVER_PUBLIC_IP "98.15.72.232"
 //#define CLIENT_PUBLIC_IP "71.127.254.212"
 
@@ -142,11 +142,11 @@ int main(int argc, char **arg){
     if (argc < 7)
     {
         SR = 200;
-        SS = 95 - 25;
-        SE = 95 + 25;
+        SS = 140 - 40;
+        SE = 140 + 40;
         LR = 90;
-        LS = 150 - 90;
-        LE = 150 + 90;
+        LS = 150;// - 90;
+        LE = 150;// + 90;
     } else{
         SR = atoi(arg[1]);
         SS = strtof(arg[2], &target);
@@ -165,8 +165,11 @@ int main(int argc, char **arg){
 
     for (int ii = 0; ii < servo_resolution/2+1; ii++){
         servo_angles[ii] = servo_start+servo_step*ii;
-        servo_angles[servo_resolution-ii] = servo_angles[ii]; 
-    }    
+        servo_angles[servo_resolution-ii] = servo_angles[ii];
+        printf
+    }
+
+    return 0;
 
     /* lx-16a servo setup */
     int lx16_resolution = LR;
@@ -231,7 +234,7 @@ int main(int argc, char **arg){
     System_Init();
     // prepare text file to write
     FILE * fp;
-    fp = fopen("./RedPitaya_WhiteFin_V3.3_V0.8_3LC_Grantry+Glycerin_1.dat", "w");
+    fp = fopen("./RedPitaya_WhiteFin_V3.3_V0.8_WirePhantom_Grantry+Glycerin+10mmLens.dat", "w");
     // set trigger delay
     if (rp_AcqSetTriggerDelay((int32_t)ADC_TRIG_DELAY) != RP_OK){
         fprintf(stderr, "Error: Sets the number of decimated data after trigger written into memory failed!\n");
@@ -241,7 +244,6 @@ int main(int argc, char **arg){
     double cpu_time_used;
     start = clock();
     for (int n = 0; n < lx16_resolution; n++){
-        printf("%d\n", n);
         char command_buffer[50];
         sprintf(command_buffer, "python3 ./control_lx16a.py %f", lx16_angles[n]);
         printf("%s\n", command_buffer);
@@ -295,14 +297,13 @@ int main(int argc, char **arg){
             servo_angle = servo_angles[angle_index];
             printf("Designed Sweeping Angle: %f \t", servo_angle);
             control_servo(servo_angle);
-
+            //usleep(10000);
             sweeping_angle = readTwoBytes(_raw_ang_hi, _raw_ang_lo);
             printf("Actual Sweeping Angle: %d (%f)\n", sweeping_angle, sweeping_angle*0.087);
             // convert small endian to big endian
             sweeping_angle = changed_endian_2Bytes(sweeping_angle);
             // put number in bytes
             memcpy(sweeping_angle_char, &sweeping_angle, sizeof sweeping_angle_char);
-
             /* ##################### Rotating ##################### */
             rotation_angle = (int)(lx16_angles[n] * 4096.0/360.0);
             rotation_angle = changed_endian_2Bytes(rotation_angle);

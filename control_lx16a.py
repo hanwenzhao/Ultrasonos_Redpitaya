@@ -15,10 +15,10 @@ start = time.time()
 while(True):
     servo1.moveTimeWrite(angle)
     true_angle = servo1.getPhysicalPos()
-    if abs(true_angle - angle) < 2:
+    if abs(true_angle - angle) < 1:
         break
     end = time.time()
-    if (end-start) > 5.0:
+    if (end-start) > 10.0:
         print("######################## Timeout ########################\n")
         break
 
